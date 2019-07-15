@@ -1,0 +1,98 @@
+:local {
+    .mainView {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        padding: 2em;
+        overflow: hidden;
+
+        & .header {
+            & > * {
+                margin-right: 0.7em;
+                &:last-child {
+                    margin-right: 0;
+                }
+            }
+
+            & svg {
+                width: auto;
+                height: 18px;
+            }
+
+            & span, & svg {
+                display: inline-block;
+                vertical-align: middle;
+            }
+
+            & button {
+                font-size: 0.9em;
+                background: none;
+                cursor: pointer;
+                &:hover:enabled {
+                    color: #0000cc;
+                }
+                &:active:enabled {
+                    color: #000066;
+                }
+            }
+
+            & .lastModified {
+                font-family: 'Open Sans', sans-serif;
+                font-size: 0.6em;
+                color: #666;
+                margin-right: 0.8em;
+            }
+        }
+
+        & .editorView {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            flex: 1;
+            overflow: hidden;
+
+            &.centered {
+                align-items: center;
+                justify-content: center
+            }
+
+            & .titleInput {
+                & {
+                    color: #555;
+                }
+                &:focus, &:focus-within {
+                    color: #000;
+                }
+                font-family: 'Lora', serif;
+                font-size: 1.8em;
+                padding: 12px 15px;
+            }
+
+            & .dirtyDot {
+                content: ' ';
+                position: absolute;
+                right: 5px;
+                bottom: 5px;
+                width: 10px;
+                height: 10px;
+                background: #dd0000;
+                border-radius: 5px;
+                opacity: 0.8;
+            }
+        }
+    }
+}
+
+:global(.ql-toolbar.ql-snow) {
+    border: 1px solid #ececec;
+    border-bottom: 0 !important;
+}
+
+:global(.editor) {
+    border: 1px solid #ececec;
+}
+
+:global(.editor .ql-container.ql-snow) {
+    border: 0 !important;
+}

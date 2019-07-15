@@ -1,0 +1,32 @@
+:local {
+    .loginView {
+        padding: 1em;
+
+        & h5 {
+            margin-bottom: 0.8em;
+            color: #959595;
+        }
+
+        & input[type=text], & button {
+            padding: .5em .6em;
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            vertical-align: middle;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+        }
+
+        & button {
+            &:disabled {
+                opacity: 0.4;
+            }
+            margin-left: 0.4em;
+        }
+
+        & small {
+            color: red;
+            font-size: 0.8em;
+        }
+    }
+}

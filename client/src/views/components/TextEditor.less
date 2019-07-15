@@ -1,0 +1,59 @@
+:local {
+    .te-wrapper {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        margin-top: 0.5em;
+        overflow: hidden;
+        -webkit-touch-callout: initial;
+        -webkit-user-select: initial;
+        -khtml-user-select: initial;
+        -moz-user-select: initial;
+        -ms-user-select: initial;
+        user-select: initial;
+
+        & .te-container {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        & .te-toolbar {
+            display: flex;
+            flex-direction: row;
+            flex-shrink: 0;
+            overflow-x: scroll;
+            overflow-y: hidden;
+
+            & .te-spacer {
+                flex-grow: 1;
+                &:before {
+                    content: ' '
+                }
+            }
+        }
+
+        & .te-editor {
+            height: auto;
+            overflow: visible;
+
+            & hr {
+                width: 50%;
+                border: none;
+                color: #111;
+                letter-spacing: 1em;
+                text-align: center;
+                margin: 4em auto;
+                font-size: 2px;
+              }
+            & hr:before {
+                content: ' ';
+                display: block;
+                border-top: 1px dashed #c9cdd1;
+                margin: 0 3px;
+                position: relative;
+                top: 4px;
+            }
+
+        }
+    }
+}

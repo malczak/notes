@@ -1,0 +1,17 @@
+{
+  "name": "serverless_diary",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "malczak <mateusz@malczak.info>",
+  "license": "MIT",
+  "devDependencies": {
+    "glob": "^7.1.4",
+    "serverless": "^1.42.3"
+  },
+  "scripts": {
+    "sls": "node_modules/.bin/sls",
+    "deploy": "yarn sls deploy -v",
+    "remove": "yarn sls remove -v"
+  },
+  "dependencies": {}
+}

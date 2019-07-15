@@ -1,0 +1,428 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: ServerlessDiary # NOTE: update this with your service name
+
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+# frameworkVersion: "=X.X.X"
+
+plugins:
+    localPath: "./serverless_plugins"
+    modules:
+        - packager-plugin
+        - output-plugin
+        - client-deploy
+
+custom:
+    api:
+        name: Serverless Diary
+
+provider:
+    name: aws
+    runtime: nodejs8.10
+    stage: ${opt:stage,'dev'}
+    versionFunctions: false
+
+package:
+    individually: true
+    exclude:
+        - "**/*"
+
+# Lambda functions
+functions:
+    dataSource:
+        name: serverless-diary-datasource
+        handler: index.handler
+        role: RoleLambdaExecution
+        timeout: 300
+        environment:
+            DEBUG: app:error
+            NODE_ENV: production
+            STAGE: ${self:provider.stage}
+            BUCKET: !Ref S3Bucket
+        package:
+            artifact: ".serverless/artifact.zip"
+
+# CloudFormation architecture
+resources:
+    Resources:
+        S3Bucket:
+            Type: AWS::S3::Bucket
+            DeletionPolicy: Retain
+            Properties:
+                AccessControl: "Private"
+                WebsiteConfiguration:
+                    IndexDocument: "index.html"
+                    ErrorDocument: "index.html"
+
+        IAMUser:
+            Type: AWS::IAM::User
+            DependsOn: S3Bucket
+            Properties:
+                Policies:
+                    - PolicyName: AppSyncAccess
+                      PolicyDocument:
+                          Version: "2012-10-17"
+                          Statement:
+                              - Effect: "Allow"
+                                Action:
+                                    - "appsync:*"
+                                Resource: !Join
+                                    - ""
+                                    - - !GetAtt AppSyncApi.Arn
+                                      - "/*"
+
+        IAMUserKey:
+            Type: AWS::IAM::AccessKey
+            DependsOn: IAMUser
+            Properties:
+                UserName: !Ref IAMUser
+
+        RoleLambdaExecution:
+            Type: "AWS::IAM::Role"
+            Properties:
+                AssumeRolePolicyDocument:
+                    Version: "2012-10-17"
+                    Statement:
+                        - Effect: "Allow"
+                          Principal:
+                              Service:
+                                  - appsync.amazonaws.com
+                                  - lambda.amazonaws.com
+                                  - edgelambda.amazonaws.com
+                          Action:
+                              - "sts:AssumeRole"
+                Path: /
+                Policies:
+                    - PolicyName: logsAccess
+                      PolicyDocument:
+                          Version: "2012-10-17"
+                          Statement:
+                              - Effect: "Allow"
+                                Action:
+                                    - "logs:*"
+                                Resource: "arn:aws:logs:*:*:*"
+
+        # LambdaDiary:
+        #     Type: "AWS::Lambda::Function"
+        #     DependsOn: RoleLambdaExecution
+        #     Properties:
+        #         Handler: "server.handler"
+        #         Runtime: "nodejs8.10"
+        #         Timeout: 300
+        #         Environment:
+        #             Variables:
+        #                 DEBUG: app:error
+        #                 BUCKET: !Ref S3Bucket
+        #         Code:
+        #             S3Bucket: !Ref CodeS3Bucket
+        #             S3Key: !Ref CodeS3Key
+        #         Role: !GetAtt RoleLambdaExecution.Arn
+
+        AppSyncApi:
+            Type: "AWS::AppSync::GraphQLApi"
+            DependsOn:
+                - S3Bucket
+                - DataSourceLambdaFunction
+            Properties:
+                AuthenticationType: "AWS_IAM"
+                Name: ${self:custom.api.name}
+
+        AppSyncSchema:
+            Type: "AWS::AppSync::GraphQLSchema"
+            Properties:
+                ApiId: !GetAtt AppSyncApi.ApiId
+                Definition: |
+                    type ConfigField {
+                        name: String!
+                        value: String
+                    }
+
+                    input ConfigFieldInput {
+                        name: String!
+                        value: String
+                    }
+
+                    type File {
+                        id: String!
+                        title: String
+                        size: Int!
+                        lastModified: String!
+                        content: String
+                    }
+
+                    type Mutation {
+                        createFile(title: String, content: String): File
+                        updateFile(id: String!, title: String, content: String): File
+                        deleteFile(id: String!): File
+                        setConfig(fields: [ConfigFieldInput]): [ConfigField]
+                    }
+
+                    type Query {
+                        listFiles: [File]
+                        getContent(id: String): File
+                        getConfig: [ConfigField]
+                    }
+
+                    schema {
+                        query: Query
+                        mutation: Mutation
+                    }
+
+        RoleLambdaService:
+            Type: "AWS::IAM::Role"
+            DependsOn: DataSourceLambdaFunction
+            Properties:
+                AssumeRolePolicyDocument:
+                    Version: "2012-10-17"
+                    Statement:
+                        - Effect: "Allow"
+                          Principal:
+                              Service:
+                                  - appsync.amazonaws.com
+                                  - lambda.amazonaws.com
+                                  - edgelambda.amazonaws.com
+                          Action:
+                              - "sts:AssumeRole"
+                Path: /
+                Policies:
+                    - PolicyName: LambdaInvoke
+                      PolicyDocument:
+                          Version: "2012-10-17"
+                          Statement:
+                              - Effect: "Allow"
+                                Action:
+                                    - "lambda:InvokeFunction"
+                                Resource: !GetAtt DataSourceLambdaFunction.Arn
+
+        IAMS3AccessPolicy:
+            Type: "AWS::IAM::Policy"
+            DependsOn:
+                - IAMUser
+                - RoleLambdaService
+                - RoleLambdaExecution
+            Properties:
+                Users:
+                    - !Ref IAMUser
+                Roles:
+                    - !Ref RoleLambdaService
+                    - !Ref RoleLambdaExecution
+                PolicyName: S3Access
+                PolicyDocument:
+                    Version: "2012-10-17"
+                    Statement:
+                        - Effect: "Allow"
+                          Action:
+                              - "s3:PutObject"
+                              - "s3:GetObject"
+                              - "s3:ListBucket"
+                              - "s3:DeleteObject"
+                          Resource:
+                              - !GetAtt S3Bucket.Arn
+                              - !Join
+                                - ""
+                                - - !GetAtt S3Bucket.Arn
+                                  - "/*"
+
+        AppSyncDataSource:
+            Type: "AWS::AppSync::DataSource"
+            DependsOn: AppSyncSchema
+            Properties:
+                ApiId: !GetAtt AppSyncApi.ApiId
+                Name: ServerlessDiaryDataSource
+                Description: "AppSync Data Source for Serverless Diary application"
+                Type: AWS_LAMBDA
+                ServiceRoleArn: !GetAtt RoleLambdaService.Arn
+                LambdaConfig:
+                    LambdaFunctionArn: !GetAtt DataSourceLambdaFunction.Arn
+
+        # Query resolvers
+        AppSyncQueryResolverListFiles:
+            Type: "AWS::AppSync::Resolver"
+            DependsOn: AppSyncDataSource
+            Properties:
+                ApiId: !GetAtt AppSyncApi.ApiId
+                TypeName: Query
+                FieldName: listFiles
+                DataSourceName: !GetAtt AppSyncDataSource.Name
+                RequestMappingTemplate: |
+                    {
+                        "version" : "2017-02-28",
+                        "operation": "Invoke",
+                        "payload": {
+                            "payload": {
+                                "action": "listFiles"
+                            }
+                        }
+                    }
+                ResponseMappingTemplate: "$util.toJson($ctx.result)"
+
+        AppSyncQueryResolverGetContent:
+            Type: "AWS::AppSync::Resolver"
+            DependsOn: AppSyncDataSource
+            Properties:
+                ApiId: !GetAtt AppSyncApi.ApiId
+                TypeName: Query
+                FieldName: getContent
+                DataSourceName: !GetAtt AppSyncDataSource.Name
+                RequestMappingTemplate: |
+                    {
+                        "version" : "2017-02-28",
+                        "operation": "Invoke",
+                        "payload": {
+                            "payload": {
+                                "action": "getContent",
+                                "data": $util.toJson($context.args)
+                            }
+                        }
+                    }
+                ResponseMappingTemplate: "$util.toJson($ctx.result)"
+
+        AppSyncQueryResolverGetConfig:
+            Type: "AWS::AppSync::Resolver"
+            DependsOn: AppSyncDataSource
+            Properties:
+                ApiId: !GetAtt AppSyncApi.ApiId
+                TypeName: Query
+                FieldName: getConfig
+                DataSourceName: !GetAtt AppSyncDataSource.Name
+                RequestMappingTemplate: |
+                    {
+                        "version" : "2017-02-28",
+                        "operation": "Invoke",
+                        "payload": {
+                            "payload": {
+                                "action": "getConfig"
+                            }
+                        }
+                    }
+                ResponseMappingTemplate: "$util.toJson($ctx.result)"
+
+        # Mutation resolvers
+        AppSyncMutateResolverCreateFile:
+            Type: "AWS::AppSync::Resolver"
+            DependsOn: AppSyncDataSource
+            Properties:
+                ApiId: !GetAtt AppSyncApi.ApiId
+                TypeName: Mutation
+                FieldName: createFile
+                DataSourceName: !GetAtt AppSyncDataSource.Name
+                RequestMappingTemplate: |
+                    {
+                        "version" : "2017-02-28",
+                        "operation": "Invoke",
+                        "payload": {
+                            "payload": {
+                                "action": "createFile",
+                                "data": $util.toJson($context.args)
+                            }
+                        }
+                    }
+                ResponseMappingTemplate: "$util.toJson($ctx.result)"
+
+        AppSyncMutateResolverUpdateFile:
+            Type: "AWS::AppSync::Resolver"
+            DependsOn: AppSyncDataSource
+            Properties:
+                ApiId: !GetAtt AppSyncApi.ApiId
+                TypeName: Mutation
+                FieldName: updateFile
+                DataSourceName: !GetAtt AppSyncDataSource.Name
+                RequestMappingTemplate: |
+                    {
+                        "version" : "2017-02-28",
+                        "operation": "Invoke",
+                        "payload": {
+                            "payload": {
+                                "action": "updateFile",
+                                "data": $util.toJson($context.args)
+                            }
+                        }
+                    }
+                ResponseMappingTemplate: "$util.toJson($ctx.result)"
+
+        AppSyncMutateResolverDeleteFile:
+            Type: "AWS::AppSync::Resolver"
+            DependsOn: AppSyncDataSource
+            Properties:
+                ApiId: !GetAtt AppSyncApi.ApiId
+                TypeName: Mutation
+                FieldName: deleteFile
+                DataSourceName: !GetAtt AppSyncDataSource.Name
+                RequestMappingTemplate: |
+                    {
+                        "version" : "2017-02-28",
+                        "operation": "Invoke",
+                        "payload": {
+                            "payload": {
+                                "action": "deleteFile",
+                                "data": $util.toJson($context.args)
+                            }
+                        }
+                    }
+                ResponseMappingTemplate: "$util.toJson($ctx.result)"
+
+        AppSyncMutateResolverSetConfig:
+            Type: "AWS::AppSync::Resolver"
+            DependsOn: AppSyncDataSource
+            Properties:
+                ApiId: !GetAtt AppSyncApi.ApiId
+                TypeName: Mutation
+                FieldName: setConfig
+                DataSourceName: !GetAtt AppSyncDataSource.Name
+                RequestMappingTemplate: |
+                    {
+                        "version" : "2017-02-28",
+                        "operation": "Invoke",
+                        "payload": {
+                            "payload": {
+                                "action": "setConfig",
+                                "data": $util.toJson($context.args)
+                            }
+                        }
+                    }
+                ResponseMappingTemplate: "$util.toJson($ctx.result)"
+
+    Outputs:
+        Bucket:
+            Description: The application bucket
+            Value: !Ref S3Bucket
+
+        User:
+            Description: The dedicated AppSync user
+            Value: !Ref IAMUser
+
+        AccessKeyId:
+            Description: The user access key
+            Value: !Ref IAMUserKey
+
+        SecretAccessKey:
+            Description: The user access secret
+            Value: !GetAtt IAMUserKey.SecretAccessKey
+
+        ApiEndpoint:
+            Description: The URL to the GraphQL Endpoint
+            Value: !GetAtt AppSyncApi.GraphQLUrl
+
+        ApiId:
+            Description: The API ID of the GraphQL API
+            Value: !GetAtt AppSyncApi.ApiId
+
+        LambdaName:
+            Description: The Lambda name used as GQL resolver
+            Value: !Ref DataSourceLambdaFunction
+
+        ClientUrl:
+            Description: Client application url
+            Value: !GetAtt S3Bucket.WebsiteURL

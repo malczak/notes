@@ -1,0 +1,54 @@
+{
+    "env": {
+        "es6": true,
+        "browser": true,
+        "node": true
+    },
+    "extends": [
+        "eslint:recommended",
+        "plugin:react/recommended"
+    ],
+    "parser": "babel-eslint",
+    "plugins": [
+        "babel",
+        "react"
+    ],
+    "rules": {
+        "no-unused-vars": ["error", {
+            "args": "after-used"
+        }],
+        "no-undef": "off",
+        "constructor-super": 0,
+        "no-console": 0,
+        "indent": [1, 4],
+        "indent": [
+            "error",
+            4,
+            {
+                "SwitchCase": 1
+            }
+        ],
+        "linebreak-style": [
+            "error",
+            "unix"
+        ],
+        "quotes": [
+            "error",
+            "single"
+        ],
+        "semi": [
+            "error",
+            "always"
+        ],
+        "react/prop-types": [0],
+        "react/jsx-no-undef": [1, { "allowGlobals": true }]
+    },
+    "parserOptions": {
+        "ecmaFeatures": {
+            "jsx": true
+        }
+    },
+    "globals": {
+        "Spectrum": true
+    }
+}
