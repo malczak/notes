@@ -7,7 +7,7 @@ const merge = require('webpack-merge');
 const HOST = 'notes.test';
 
 module.exports = function(commonConfig, opts = {}) {
-    const { paths } = opts;
+    const { paths, babelLoader } = opts;
 
     const inDocker = (opts.runner || '') === 'docker';
     const runnerOpts = inDocker
@@ -56,6 +56,26 @@ module.exports = function(commonConfig, opts = {}) {
             },
             runnerOpts
         ),
+        module: {
+            rules: [
+                {
+                    test: /\.(js|jsx)$/,
+                    exclude: /node_modules(?!\/webpack-dev-server)/,
+                    use: {
+                        loader: 'babel-loader',
+                        options: {
+                            ...babelLoader.options,
+                            sourceType: 'unambiguous',
+                            env: {
+                                development: {
+                                    plugins: ['react-hot-loader/babel']
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        },
         plugins: [new webpack.EnvironmentPlugin({ NODE_ENV: 'development' })]
     });
 

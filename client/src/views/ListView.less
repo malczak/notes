@@ -6,8 +6,35 @@
         padding: 2em;
         overflow: hidden;
 
-        & nav {
-            margin-bottom: 1.2em;
+        & nav button, & nav div {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+        }
+
+        & nav hr {
+            margin: 0.6em 0;
+            border-bottom: 1px solid #dedede;
+        }
+
+        & nav .actions {
+            display: flex;
+            flex-direction: row;
+
+            & .spacer {
+                flex: 1;
+            }
+            & button {
+                cursor: pointer;
+                margin-right: 0.5em;
+                &:last-child {
+                    margin-right: 0;
+                }
+            }
+            font-size: 0.6em;
+            & svg {
+                height: 16px;
+            }
         }
 
         & .listWrapper {
@@ -30,7 +57,7 @@
             }
 
             & .info {
-                margin: 0.6em 0 1.2em 0.5em;
+                margin: 0.6em 0 1.2em 0.8em;
                 display: flex;
                 flex-direction: row;
                 align-items: center;
@@ -48,7 +75,7 @@
                     vertical-align: middle;
                 }
 
-                & button {
+                & a {
                     color: #555;
                     background: none;
                     cursor: pointer;

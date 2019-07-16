@@ -2,7 +2,6 @@
 import { observable, action } from 'mobx';
 
 // Stores
-import Store from 'app/stores/Store';
 import AppSyncStore from 'app/stores/AppSyncStore';
 
 function reduce(object, source = null) {
@@ -15,7 +14,7 @@ function reduce(object, source = null) {
     }, {});
 }
 
-class ApplicationStore extends Store {
+class ApplicationStore {
     @observable
     busy = false;
 
@@ -30,13 +29,11 @@ class ApplicationStore extends Store {
     }
 
     constructor() {
-        super();
-
         console.warn(
             `**\nVersion ${GIT_BRANCH} #${GIT_COMMIT} @ ${BUILD_DATE} \n**`
         );
 
-        this.registerStore('appSync', AppSyncStore);
+        this.appSync = new AppSyncStore();
     }
 
     deleteFile(file) {
@@ -48,7 +45,7 @@ class ApplicationStore extends Store {
     toObject() {
         return {
             rootStore: this,
-            ...reduce(this._stores, this)
+            appSync: this.appSync
         };
     }
 }

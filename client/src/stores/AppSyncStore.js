@@ -1,6 +1,5 @@
 import { reaction } from 'mobx';
 
-import Store from 'app/stores/Store';
 import Client, { UnauthorizedError } from 'app/gql/Client';
 import Loadable from 'app/views/Loadable';
 
@@ -23,7 +22,7 @@ class Config {
     }
 }
 
-class AppSyncStore extends Store {
+class AppSyncStore {
     @observable.ref token = null;
 
     @observable.ref config = Loadable.empty();
@@ -50,9 +49,7 @@ class AppSyncStore extends Store {
         this.token = token;
     }
 
-    init() {
-        super.init();
-
+    constructor() {
         const server = Env.config.server;
         this.client = new Client({
             endpoint: server.endpoint,

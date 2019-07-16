@@ -15,8 +15,6 @@ import IconAlignCenter from 'quill/assets/icons/align-center.svg';
 import IconAlignRight from 'quill/assets/icons/align-right.svg';
 
 import IconTrash from 'assets/trash-2.svg';
-import IconGithub from 'assets/github.svg';
-import IconMail from 'assets/at-sign.svg';
 import IconUploadCloud from 'assets/upload-cloud.svg';
 
 // Import vendor CSS
@@ -64,12 +62,7 @@ const formats = [
 ];
 
 const Toolbar = props => {
-    const {
-        onGithubClick,
-        onFeedbackClick,
-        onDeleteClick,
-        ...otherProps
-    } = props;
+    const { onDeleteClick, ...otherProps } = props;
     return (
         <div {...otherProps}>
             <button className="ql-header" value="2" />
@@ -98,12 +91,6 @@ const Toolbar = props => {
             <span className={styles['te-spacer']} />
             <button onClick={onDeleteClick}>
                 <IconTrash />
-            </button>
-            <button onClick={onFeedbackClick}>
-                <IconMail />
-            </button>
-            <button onClick={onGithubClick}>
-                <IconGithub />
             </button>
         </div>
     );
@@ -194,13 +181,7 @@ class TextEditor extends React.Component {
 
     // Render
     render() {
-        const {
-            className,
-            onGithub,
-            onFeedback,
-            onDeleteClick,
-            ...passThroughProps
-        } = this.props;
+        const { className, onDeleteClick, ...passThroughProps } = this.props;
 
         const scrollingContainerId = `te-sc-${Date.now()}`;
         const toolbarId = `te-tb-${Date.now()}`;
@@ -208,8 +189,6 @@ class TextEditor extends React.Component {
         return (
             <div className={classNames(styles['te-wrapper'], className)}>
                 <Toolbar
-                    onGithubClick={onGithub}
-                    onFeedbackClick={onFeedback}
                     onDeleteClick={onDeleteClick}
                     className={styles['te-toolbar']}
                     id={toolbarId}

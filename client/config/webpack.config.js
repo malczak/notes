@@ -33,7 +33,8 @@ const endpoints = {
     prod: {
         webpack: 'prod',
         config: {
-            env: 'prod'
+            env: 'prod',
+            server: {}
         }
     }
 };
@@ -43,7 +44,6 @@ const commonConfig = {};
 const babelLoader = {
     loader: 'babel-loader',
     options: {
-        sourceType: 'unambiguous',
         presets: ['@babel/preset-env', '@babel/preset-react'],
         plugins: [
             [
@@ -106,17 +106,7 @@ module.exports = function(env = {}) {
                 {
                     test: /\.(js|jsx)$/,
                     exclude: /node_modules(?!\/webpack-dev-server)/,
-                    use: {
-                        loader: 'babel-loader',
-                        options: {
-                            ...babelLoader.options,
-                            env: {
-                                development: {
-                                    plugins: ['react-hot-loader/babel']
-                                }
-                            }
-                        }
-                    }
+                    use: babelLoader
                 },
                 {
                     test: /\.css$/,
@@ -152,8 +142,19 @@ module.exports = function(env = {}) {
                     test: /\.svg$/,
                     use: [
                         babelLoader,
+                        babelLoader,
                         {
-                            loader: 'react-svg-loader'
+                            loader: 'react-svg-loader',
+                            options: {
+                                jsx: true,
+                                svgo: {
+                                    plugins: [
+                                        {
+                                            removeViewBox: false
+                                        }
+                                    ]
+                                }
+                            }
                         }
                     ]
                 },
@@ -169,12 +170,12 @@ module.exports = function(env = {}) {
                             }
                         }
                     ]
-                },
-                {
-                    test: /\.mjs$/,
-                    include: /node_modules/,
-                    type: 'javascript/auto'
                 }
+                // {
+                //     test: /\.mjs$/,
+                //     include: /node_modules/,
+                //     type: 'javascript/auto'
+                // }
             ]
         },
         node: {
@@ -239,7 +240,8 @@ module.exports = function(env = {}) {
         stage,
         paths,
         stageConfig,
-        clientConfig
+        clientConfig,
+        babelLoader
     });
 
     return webpackConfig;

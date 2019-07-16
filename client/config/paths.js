@@ -24,7 +24,6 @@ module.exports = stage => {
             `public/index-${stage}.html`,
             'public/index.html'
         ),
-        appFavicon: resolvePath('public/favicon.ico'),
         appIndexJs: resolvePath('src/index.js'),
         appPackageJson: resolvePath('package.json'),
         appSrc: resolvePath('src'),

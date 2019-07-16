@@ -1,6 +1,6 @@
 // Runtime include
-// import 'core-js/stable';
-// import 'regenerator-runtime/runtime';
+import 'core-js/stable';
+import 'regenerator-runtime/runtime';
 
 // Core
 import React from 'react';
@@ -14,7 +14,6 @@ import { ErrorBoundary } from 'app/utils/error';
 import ApplicationStore from 'app/stores/ApplicationStore';
 
 const rootStore = new ApplicationStore();
-rootStore.initialize();
 
 /**
  * Application container

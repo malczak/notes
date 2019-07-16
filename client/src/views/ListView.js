@@ -10,6 +10,9 @@ import styles from './ListView.less';
 import IconTrash from 'assets/trash-2.svg';
 import IconClock from 'assets/clock.svg';
 import IconNewFile from 'assets/file-plus.svg';
+import IconGithub from 'assets/github.svg';
+import IconMail from 'assets/at-sign.svg';
+import AppIcon from 'assets/appicon.svg';
 
 const FilesList = ({ files, onDeleteClick }) => {
     const format = date => moment(date).format('MMMM Do YYYY, h:mm:ss a');
@@ -19,19 +22,20 @@ const FilesList = ({ files, onDeleteClick }) => {
             <Link to={`/edit/${file.id}`}>
                 <div>{file.title}</div>
                 <Box display="flex" className={styles.info}>
-                    <IconClock />
-                    <Box is="span" marginRight="0.5em">
-                        {format(file.lastModified)}
-                    </Box>
-                    <button
+                    <a
                         onClick={evt => {
                             evt.preventDefault();
                             onDeleteClick();
                         }}
                     >
                         <IconTrash />
-                        <span>Delete</span>
-                    </button>
+                    </a>
+                    <span>
+                        <IconClock />
+                    </span>
+                    <Box is="span" marginRight="0.5em">
+                        {format(file.lastModified)}
+                    </Box>
                 </Box>
             </Link>
         </li>
@@ -64,6 +68,10 @@ class ListView extends React.Component {
     // -----------------------
     // Handlers
     // -----------------------
+    onFeedbackClick = () => {};
+
+    onGithubClick = () => {};
+
     onCreateFile = () => {
         this.client.createFile().then(file => {
             const id = file.id;
@@ -90,10 +98,25 @@ class ListView extends React.Component {
         return (
             <div className={styles.filesList}>
                 <nav>
-                    <button onClick={this.onCreateFile}>
-                        <IconNewFile />
-                        <span>New note</span>
-                    </button>
+                    <div>
+                        <AppIcon width={24} height={24} />
+                        <span>Notes</span>
+                    </div>
+                    <hr />
+                    <div className={styles.actions}>
+                        <button onClick={this.onCreateFile}>
+                            <IconNewFile />
+                            <span>New note</span>
+                        </button>
+                        <div className={styles.spacer} />
+                        <button onClick={this.onFeedbackClick}>
+                            <IconMail />
+                        </button>
+                        <button onClick={this.onGithubClick}>
+                            <IconGithub />
+                        </button>
+                    </div>
+                    <hr />
                 </nav>
 
                 {files ? (

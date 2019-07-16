@@ -1,25 +1,25 @@
 // Shared split chunks config
 module.exports = {
     cacheGroups: {
-        blueprintjs: {
-            test: /[\\/]node_modules[\\/](@blueprintjs)[\\/]/,
-            name: 'blueprintjs',
-            chunks: 'all',
-            minChunks: 1,
-            enforce: true,
-            priority: 5
-        },
         reactify: {
             test: /[\\/]node_modules[\\/](?:react|mobx)(?:-[a-z0-9\\-]*)?[\\/]/,
             name: 'reactify',
             chunks: 'all',
             minChunks: 1,
             enforce: true,
-            priority: 4
+            priority: 5
         },
-        evergreen: {
-            test: /[\\/]node_modules[\\/](evergreen-ui|ui-box)[\\/]/,
-            name: 'evergreen',
+        highlight: {
+            test: /[\\/]node_modules[\\/](?:highlight\.js)[\\/]/,
+            name: 'highlight',
+            chunks: 'all',
+            minChunks: 1,
+            enforce: true,
+            priority: 3
+        },
+        quill: {
+            test: /[\\/]node_modules[\\/](?:quill.*)[\\/]/,
+            name: 'quill',
             chunks: 'all',
             minChunks: 1,
             enforce: true,
