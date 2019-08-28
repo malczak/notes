@@ -1,14 +1,16 @@
+const cuid = require('cuid');
 const path = require('path');
 const fs = require('fs');
 const { execSync } = require('child_process');
-const { withLowercaseKeys, getPaths } = require('./utils');
+const { readFiles, withLowercaseKeys, getPaths } = require('./utils');
 
 const Const = {
-    allowedExtensions: ['html', 'js', 'css'],
+    allowedExtensions: ['html', 'js', 'css', 'png'],
     contentTypes: {
         html: 'text/html',
         js: 'text/javascript',
-        css: 'text/css'
+        css: 'text/css',
+        png: 'image/png'
     }
 };
 
@@ -72,8 +74,10 @@ class ClientPlugin {
             `env-${stage}`
         );
 
-        const files = fs
-            .readdirSync(buildPath)
+        const files = readFiles(
+            `**/*(${Const.allowedExtensions.map(ext => `*.${ext}`).join('|')})`,
+            buildPath
+        )
             .map(file => {
                 return {
                     name: file,
@@ -96,7 +100,55 @@ class ClientPlugin {
             });
         }
 
+        console.log('⬆️ Uploading sample document');
+        const sampleDoc = this.createSampleFile();
+        await this.provider.request('S3', 'putObject', {
+            Bucket: serverConfig.bucket,
+            Key: `data/${sampleDoc.id}`,
+            Body: sampleDoc.content,
+            ACL: 'public-read',
+            Metadata: {
+                title: encodeURIComponent(sampleDoc.title),
+                compressed: '0'
+            }
+        });
+
         console.log(`🌍 ${outputs.clientUrl}`);
+    }
+
+    createSampleFile() {
+        return {
+            id: cuid(),
+            title: 'Your first entry',
+            content: JSON.stringify({
+                editor: 'quill',
+                ops: [
+                    { insert: 'Hi there!' },
+                    {
+                        attributes: { align: 'center', header: 2 },
+                        insert: '\n'
+                    },
+                    { attributes: { align: 'center' }, insert: '\n' },
+                    { insert: { divider: true } },
+                    { insert: 'This is your private diary... ' },
+                    {
+                        attributes: { align: 'center', header: 3 },
+                        insert: '\n'
+                    },
+                    { insert: 'make most of it!' },
+                    {
+                        attributes: { align: 'center', header: 3 },
+                        insert: '\n'
+                    },
+                    { attributes: { align: 'center' }, insert: '\n' },
+                    { attributes: { italic: true }, insert: 'good luck ' },
+                    { attributes: { align: 'center' }, insert: '\n' },
+                    { insert: 'Matt' },
+                    { attributes: { align: 'center' }, insert: '\n' },
+                    { insert: '\n' }
+                ]
+            })
+        };
     }
 }
 

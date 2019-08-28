@@ -3,7 +3,7 @@ const glob = require('glob');
 const fs = require('fs');
 const os = require('os');
 const { execSync } = require('child_process');
-const { getPaths } = require('./utils');
+const { readFiles, getPaths } = require('./utils');
 
 class PackagerPlugin {
     constructor(serverless, options) {
@@ -24,14 +24,10 @@ class PackagerPlugin {
             return;
         }
 
-        const sources = glob.sync('**/*(*.json|*.js)', {
-            cwd: paths.serverDir,
-            stat: true,
-            nocase: true,
-            nodir: true,
-            follow: false,
-            ignore: ['node_modules/**/*.*', '**/package-lock.json']
-        });
+        const sources = readFiles('**/*(*.json|*.js)', paths.serverDir, [
+            'node_modules/**/*.*',
+            '**/package-lock.json'
+        ]);
 
         const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'pack-'));
         const cwd = { cwd: tmpDir };

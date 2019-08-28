@@ -52,7 +52,7 @@ class LWT {
 
     static aiv(hash, salt) {
         while (salt.length < 32) {
-            salt += salt;
+            salt += salt || cuid();
         }
         const $hash = Buffer.from(hash);
         const $salt = Buffer.from(salt);
@@ -492,8 +492,7 @@ exports.handler = async event => {
             throw new Error('Missing action handler');
         }
 
-        const result = await handler(data, headers, config);
-        return { status: 200, result };
+        return await handler(data, headers, config);
     } catch (error) {
         if (error instanceof AuthError) {
             logError(

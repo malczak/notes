@@ -24,7 +24,7 @@ module.exports = stage => {
             `public/index-${stage}.html`,
             'public/index.html'
         ),
-        appIndexJs: resolvePath('src/index.js'),
+        appIndexJs: resolvePath('src/index.tsx'),
         appPackageJson: resolvePath('package.json'),
         appSrc: resolvePath('src'),
         commonSrc: resolvePath('../common/src'),

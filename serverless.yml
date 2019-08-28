@@ -1,25 +1,18 @@
-# Welcome to Serverless!
+# ##
+#     _______
+#    /      /,   Serverless Diary
+#   /      //       for Geeks
+#  /______//
+# (______(/      with Serverless
 #
-# This file is the main config file for your service.
-# It's very minimal at this point and uses default values.
-# You can always add more config options for more control.
-# We've included some commented out config examples here.
-# Just uncomment any of them to get that config option.
-#
-# For full config options, check the docs:
-#    docs.serverless.com
-#
-# Happy Coding!
+# ##
 
 service: ServerlessDiary # NOTE: update this with your service name
-
-# You can pin your service to only deploy with a specific Serverless version
-# Check out our docs for more details
-# frameworkVersion: "=X.X.X"
 
 plugins:
     localPath: "./serverless_plugins"
     modules:
+        - custom-opts
         - packager-plugin
         - output-plugin
         - client-deploy
@@ -32,6 +25,7 @@ provider:
     name: aws
     runtime: nodejs8.10
     stage: ${opt:stage,'dev'}
+    salt: ${file(./serverless_plugins/utils.js):generateUniqueSalt}
     versionFunctions: false
 
 package:
@@ -51,6 +45,8 @@ functions:
             NODE_ENV: production
             STAGE: ${self:provider.stage}
             BUCKET: !Ref S3Bucket
+            PASSWD: ${opt:passwd}
+            SALT: ${self:provider.salt}
         package:
             artifact: ".serverless/artifact.zip"
 
@@ -114,22 +110,6 @@ resources:
                                     - "logs:*"
                                 Resource: "arn:aws:logs:*:*:*"
 
-        # LambdaDiary:
-        #     Type: "AWS::Lambda::Function"
-        #     DependsOn: RoleLambdaExecution
-        #     Properties:
-        #         Handler: "server.handler"
-        #         Runtime: "nodejs8.10"
-        #         Timeout: 300
-        #         Environment:
-        #             Variables:
-        #                 DEBUG: app:error
-        #                 BUCKET: !Ref S3Bucket
-        #         Code:
-        #             S3Bucket: !Ref CodeS3Bucket
-        #             S3Key: !Ref CodeS3Key
-        #         Role: !GetAtt RoleLambdaExecution.Arn
-
         AppSyncApi:
             Type: "AWS::AppSync::GraphQLApi"
             DependsOn:
@@ -170,6 +150,7 @@ resources:
                     }
 
                     type Query {
+                        signIn(passwd: String): String
                         listFiles: [File]
                         getContent(id: String): File
                         getConfig: [ConfigField]
@@ -248,6 +229,27 @@ resources:
                     LambdaFunctionArn: !GetAtt DataSourceLambdaFunction.Arn
 
         # Query resolvers
+        AppSyncQueryResolverSignIn:
+            Type: "AWS::AppSync::Resolver"
+            DependsOn: AppSyncDataSource
+            Properties:
+                ApiId: !GetAtt AppSyncApi.ApiId
+                TypeName: Query
+                FieldName: signIn
+                DataSourceName: !GetAtt AppSyncDataSource.Name
+                RequestMappingTemplate: |
+                    {
+                        "version" : "2017-02-28",
+                        "operation": "Invoke",
+                        "payload": {
+                            "payload": {
+                                "action": "signIn",
+                                "data": $util.toJson($context.args)
+                            }
+                        }
+                    }
+                ResponseMappingTemplate: "$util.toJson($ctx.result)"
+
         AppSyncQueryResolverListFiles:
             Type: "AWS::AppSync::Resolver"
             DependsOn: AppSyncDataSource
@@ -261,6 +263,9 @@ resources:
                         "version" : "2017-02-28",
                         "operation": "Invoke",
                         "payload": {
+                            "headers": {
+                                "token": $util.toJson($context.request.headers.token)
+                            },
                             "payload": {
                                 "action": "listFiles"
                             }
@@ -281,6 +286,9 @@ resources:
                         "version" : "2017-02-28",
                         "operation": "Invoke",
                         "payload": {
+                            "headers": {
+                                "token": $util.toJson($context.request.headers.token)
+                            },
                             "payload": {
                                 "action": "getContent",
                                 "data": $util.toJson($context.args)
@@ -302,6 +310,9 @@ resources:
                         "version" : "2017-02-28",
                         "operation": "Invoke",
                         "payload": {
+                            "headers": {
+                                "token": $util.toJson($context.request.headers.token)
+                            },
                             "payload": {
                                 "action": "getConfig"
                             }
@@ -323,6 +334,9 @@ resources:
                         "version" : "2017-02-28",
                         "operation": "Invoke",
                         "payload": {
+                            "headers": {
+                                "token": $util.toJson($context.request.headers.token)
+                            },
                             "payload": {
                                 "action": "createFile",
                                 "data": $util.toJson($context.args)
@@ -344,6 +358,9 @@ resources:
                         "version" : "2017-02-28",
                         "operation": "Invoke",
                         "payload": {
+                            "headers": {
+                                "token": $util.toJson($context.request.headers.token)
+                            },
                             "payload": {
                                 "action": "updateFile",
                                 "data": $util.toJson($context.args)
@@ -365,6 +382,9 @@ resources:
                         "version" : "2017-02-28",
                         "operation": "Invoke",
                         "payload": {
+                            "headers": {
+                                "token": $util.toJson($context.request.headers.token)
+                            },
                             "payload": {
                                 "action": "deleteFile",
                                 "data": $util.toJson($context.args)
@@ -386,6 +406,9 @@ resources:
                         "version" : "2017-02-28",
                         "operation": "Invoke",
                         "payload": {
+                            "headers": {
+                                "token": $util.toJson($context.request.headers.token)
+                            },
                             "payload": {
                                 "action": "setConfig",
                                 "data": $util.toJson($context.args)

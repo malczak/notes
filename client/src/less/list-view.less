@@ -1,0 +1,90 @@
+.filescontainer {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: 2em;
+    overflow: hidden;
+
+    & nav button, & nav div {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+    }
+
+    & nav hr {
+        margin: 0.6em 0;
+        border-bottom: 1px solid #dedede;
+    }
+
+    & .fileactions {
+        display: flex;
+        flex-direction: row;
+
+        & .fileactions__spacer {
+            flex: 1;
+        }
+
+        & .fileactions__button {
+            cursor: pointer;
+            margin-right: 0.5em;
+            &:last-child {
+                margin-right: 0;
+            }
+        }
+
+        font-size: 0.6em;
+
+        & svg {
+            height: 16px;
+        }
+    }
+
+    & .fileslist {
+        overflow: scroll;
+        flex: 1;
+    }
+
+    & .fileslist__content {
+        list-style-type: none;
+    }
+
+    & .filesitem {
+        font-family: 'Lora', sans-serif;
+
+        & a, & a:visited {
+            color: #555;
+        }
+        & a:hover {
+            color: #000;
+        }
+
+        & .filesitem__info {
+            margin: 0.6em 0 1.2em 0.8em;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 0.7em;
+
+            & svg {
+                margin-right: 0.4em;
+                height: 14px;
+                width: auto;
+            }
+
+            & span, & svg {
+                display: inline-block;
+                vertical-align: middle;
+            }
+
+            & a {
+                color: #555;
+                background: none;
+                cursor: pointer;
+                &:hover {
+                    color: #aa0000;
+                }
+            }
+        }
+    }
+}

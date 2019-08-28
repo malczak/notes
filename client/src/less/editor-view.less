@@ -1,0 +1,100 @@
+.editorview-wrapper {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: 2em;
+    overflow: hidden;
+
+    & .editorview-wrapper__header {
+        margin-bottom: 0.5em;
+
+        & > * {
+            margin-right: 0.7em;
+            &:last-child {
+                margin-right: 0;
+            }
+        }
+
+        & svg {
+            width: auto;
+            height: 18px;
+        }
+
+        & span, & svg {
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        & button {
+            font-size: 0.9em;
+            background: none;
+            cursor: pointer;
+            &:hover:enabled {
+                color: #0000cc;
+            }
+            &:active:enabled {
+                color: #000066;
+            }
+        }
+
+        & .header__lastModified {
+            font-family: 'Open Sans', sans-serif;
+            font-size: 0.6em;
+            color: #666;
+            margin-right: 0.8em;
+        }
+    }
+
+    & .editorview {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        flex: 1;
+        overflow: hidden;
+
+        &.editorview--centered {
+            align-items: center;
+            justify-content: center
+        }
+
+        & .editorview__titleInput {
+            & {
+                color: #555;
+            }
+            &:focus, &:focus-within {
+                color: #000;
+            }
+            font-family: 'Lora', serif;
+            font-size: 1.6em;
+            padding: 12px 15px;
+        }
+
+        & .editorview__dirtyDot {
+            content: ' ';
+            position: absolute;
+            right: 5px;
+            bottom: 5px;
+            width: 10px;
+            height: 10px;
+            background: #dd0000;
+            border-radius: 5px;
+            opacity: 0.8;
+        }
+    }
+}
+
+// Quill overrides
+
+.ql-toolbar.ql-snow {
+    border: 1px solid #ececec;
+    border-bottom: 0 !important;
+}
+
+.editor {
+    border: 1px solid #ececec;
+}
+
+.editor .ql-container.ql-snow {
+    border: 0 !important;
+}

@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "jsx": "react",
+    "experimentalDecorators": true,
+    "outDir": "./built",
+    "allowJs": true,
+    "target": "es5",
+    "lib": ["es5", "es6", "es7", "es2017", "dom"],
+    "module": "esnext",
+    "baseUrl": ".",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "alwaysStrict": true,
+    "typeRoots": ["./node_modules/@types", "./@types"],
+    "resolveJsonModule": true,
+    "strict": true,
+    "strictNullChecks": false,
+    "paths": {
+      "app/*": ["./src/*"],
+      "assets/*": ["./assets/*"],
+      "ui-box": ["./node_modules/ui-box/dist/*"],
+      "assets/trash-2.svg": ["./assets/types.d.ts"],
+      "react-quill": ["@types/react-quill.d.ts"]
+    }
+  },
+  "include": ["./src/**/*"]
+}

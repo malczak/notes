@@ -61,6 +61,7 @@ module.exports = function(commonConfig, opts = {}) {
                 })
             ]
         },
+        /*
         module: {
             rules: [
                 {
@@ -118,6 +119,7 @@ module.exports = function(commonConfig, opts = {}) {
                 }
             ]
         },
+        */
         plugins: [
             new webpack.NamedModulesPlugin(),
             new webpack.NamedChunksPlugin(),

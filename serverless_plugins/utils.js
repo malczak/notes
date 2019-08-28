@@ -1,4 +1,16 @@
+const cuid = require('cuid');
+const glob = require('glob');
 const path = require('path');
+
+const readFiles = (pattern, cwd, ignore = []) =>
+    glob.sync(pattern, {
+        cwd,
+        stat: true,
+        nocase: true,
+        nodir: true,
+        follow: false,
+        ignore
+    });
 
 const getStackName = serverless => {
     const aws = serverless.getProvider('aws');
@@ -40,9 +52,13 @@ const getPaths = () => {
     };
 };
 
+const generateUniqueSalt = () => cuid();
+
 module.exports = {
+    readFiles,
     getStackName,
     fetchStackInfo,
     withLowercaseKeys,
-    getPaths
+    getPaths,
+    generateUniqueSalt
 };

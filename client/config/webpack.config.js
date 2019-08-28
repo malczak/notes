@@ -30,6 +30,13 @@ const endpoints = {
             server: require('./.config.json')
         }
     },
+    dev: {
+        webpack: 'prod',
+        config: {
+            env: 'dev',
+            server: {}
+        }
+    },
     prod: {
         webpack: 'prod',
         config: {
@@ -44,6 +51,7 @@ const commonConfig = {};
 const babelLoader = {
     loader: 'babel-loader',
     options: {
+        sourceType: 'unambiguous',
         presets: ['@babel/preset-env', '@babel/preset-react'],
         plugins: [
             [
@@ -91,7 +99,7 @@ module.exports = function(env = {}) {
             crossOriginLoading: 'anonymous'
         },
         resolve: {
-            extensions: ['.js', '.jsx', '.json'],
+            extensions: ['.js', '.jsx', '.json', '.ts', '.tsx'],
             alias: {
                 app: paths.appSrc,
                 common: paths.commonSrc,
@@ -103,6 +111,19 @@ module.exports = function(env = {}) {
         target: 'web',
         module: {
             rules: [
+                {
+                    test: /\.tsx?$/,
+                    exclude: /node_modules(?!\/webpack-dev-server)/,
+                    use: {
+                        loader: 'ts-loader',
+                        options: {
+                            configFile: path.resolve(
+                                paths.appDirectory,
+                                'tsconfig.json'
+                            )
+                        }
+                    }
+                },
                 {
                     test: /\.(js|jsx)$/,
                     exclude: /node_modules(?!\/webpack-dev-server)/,
@@ -199,7 +220,13 @@ module.exports = function(env = {}) {
                     config: JSON.stringify(clientConfig)
                 },
                 'process.env': {
-                    BROWSER: JSON.stringify(true)
+                    BROWSER: JSON.stringify(true),
+                    version: JSON.stringify({
+                        BUILD_TAG: env.tag || gitBranch,
+                        BUILD_DATE: new Date().toUTCString(),
+                        GIT_COMMIT: gitCommit,
+                        GIT_BRANCH: gitBranch
+                    })
                 }
             }),
             new webpack.ProvidePlugin({
@@ -209,13 +236,6 @@ module.exports = function(env = {}) {
                 action: ['mobx', 'action'],
                 computed: ['mobx', 'computed'],
                 React: 'react'
-            }),
-            new webpack.DefinePlugin({
-                BUILD_TAG: JSON.stringify(env.tag || gitBranch),
-                BUILD_DATE: JSON.stringify(new Date().toUTCString()),
-
-                GIT_COMMIT: JSON.stringify(gitCommit),
-                GIT_BRANCH: JSON.stringify(gitBranch)
             }),
             new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
             new MiniCssExtractPlugin({ filename: '[name].css' }),
@@ -231,9 +251,7 @@ module.exports = function(env = {}) {
     }
 
     // run stage specific config
-    const stageWebpackBuilder = require(`./webpack.config.${
-        stageConfig.webpack
-    }`);
+    const stageWebpackBuilder = require(`./webpack.config.${stageConfig.webpack}`);
 
     webpackConfig = stageWebpackBuilder(webpackConfig, {
         ...env,

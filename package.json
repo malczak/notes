@@ -5,6 +5,7 @@
   "author": "malczak <mateusz@malczak.info>",
   "license": "MIT",
   "devDependencies": {
+    "cuid": "^2.1.6",
     "glob": "^7.1.4",
     "serverless": "^1.42.3"
   },

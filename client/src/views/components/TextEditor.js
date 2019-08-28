@@ -4,9 +4,6 @@ import classNames from 'classnames';
 import hljs from 'highlight.js';
 import ReactQuill, { Quill, Mixin } from 'react-quill';
 
-// Styles
-import styles from './TextEditor.less';
-
 // Icons
 import IconHeader3 from 'quill/assets/icons/header-3.svg';
 import IconHorizontalRule from 'quill/assets/icons/horizontal-rule.svg';
@@ -88,7 +85,7 @@ const Toolbar = props => {
                 <IconHorizontalRule />
             </button>
             <button className="ql-clean" />
-            <span className={styles['te-spacer']} />
+            <span className="te-spacer" />
             <button onClick={onDeleteClick}>
                 <IconTrash />
             </button>
@@ -187,20 +184,20 @@ class TextEditor extends React.Component {
         const toolbarId = `te-tb-${Date.now()}`;
 
         return (
-            <div className={classNames(styles['te-wrapper'], className)}>
+            <div className={classNames('te', className)}>
                 <Toolbar
                     onDeleteClick={onDeleteClick}
-                    className={styles['te-toolbar']}
+                    className="te__toolbar"
                     id={toolbarId}
                 />
                 <div
                     id={scrollingContainerId}
-                    className={classNames(styles['te-container'], 'editor')}
+                    className="te__container editor"
                     onClick={this.onContainerClick}
                 >
                     <ReactQuill
                         ref={this.quillRef}
-                        className={styles['te-editor']}
+                        className="te__editor"
                         preserveWhitespace={true}
                         formats={formats}
                         modules={{
